@@ -1,19 +1,11 @@
 import { NextResponse } from 'next/server';
 import sqlite3 from 'sqlite3';
-import path from 'path';
+import { getDbConnection } from '@/lib/db';
 
 export async function GET(): Promise<NextResponse> {
   try {
-    const dbPath = path.resolve(process.cwd(), '../backend/state.db');
-
     return new Promise<NextResponse>((resolve) => {
-      const db = new sqlite3.Database(dbPath, sqlite3.OPEN_READONLY, (err) => {
-        if (err) {
-          console.error("Error opening database:", err);
-          resolve(NextResponse.json({ success: false, error: "Database connection failed" }, { status: 500 }));
-          return;
-        }
-      });
+      const db = getDbConnection(sqlite3.OPEN_READONLY);
 
       db.all("SELECT * FROM tools ORDER BY id ASC", (err, toolsRows) => {
         if (err) {

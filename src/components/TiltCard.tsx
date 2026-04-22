@@ -9,7 +9,7 @@ interface TiltCardProps {
   status?: "up" | "down" | "unknown";
 }
 
-export default function TiltCard({ children, className = "", status = "unknown" }: TiltCardProps) {
+export default function TiltCard({ children, className = "" }: TiltCardProps) {
   const ref = useRef<HTMLDivElement>(null);
 
   const x = useMotionValue(0);

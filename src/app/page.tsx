@@ -70,7 +70,7 @@ export default function Home() {
 
   const handleAdminRefresh = async () => {
     try {
-      const res = await fetch("/api/refresh", { method: "POST" });
+      const res = await fetch("/api/sync", { method: "POST" });
       if (res.ok) {
         window.location.reload();
       }

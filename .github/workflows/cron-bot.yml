@@ -1,0 +1,43 @@
+name: Deep-Intel Cron-Bot
+
+on:
+  schedule:
+    # Run twice a day
+    - cron: '0 0,12 * * *'
+  workflow_dispatch: # Allow manual trigger from GitHub UI
+
+jobs:
+  refresh-data:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Start Next.js server & Trigger Sync API
+        run: |
+          npm run build
+          npm start &
+          sleep 5
+          curl -X POST http://localhost:3000/api/sync
+
+      - name: Commit and push changes
+        run: |
+          git config --global user.name "DeepIntel-CronBot"
+          git config --global user.email "bot@deepintel.com"
+          # Depending on Vercel deployment, state.db might have been copied to /tmp.
+          # For a Github Action running directly in the repo, we update local state.db
+          # If we used /tmp, we'd copy it back. But since VERCEL/NODE_ENV=production might not be set the same way,
+          # we check both places just in case.
+          if [ -f /tmp/state.db ]; then cp /tmp/state.db ./state.db; fi
+          git add state.db
+          git commit -m "chore: Auto-update tool intel data via API [skip ci]" || echo "No changes to commit"
+          git push
